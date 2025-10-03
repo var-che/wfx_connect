@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "WFX Connect - FleetOne MC Checker",
+  "version": "1.0.0",
+  "description": "Streamline MC checking between DAT/Sylectus and FleetOne",
+
+  "permissions": ["activeTab", "tabs", "storage", "scripting"],
+
+  "host_permissions": [
+    "https://one.dat.com/*",
+    "https://www12.sylectus.com/*",
+    "https://apps.fleetone.com/*",
+    "*://*/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://one.dat.com/*"],
+      "js": ["content-dat.js"],
+      "css": ["styles.css"]
+    },
+    {
+      "matches": ["https://www12.sylectus.com/Main.aspx*"],
+      "js": ["content-sylectus.js"],
+      "css": ["styles.css"]
+    },
+    {
+      "matches": ["https://apps.fleetone.com/FleetDocs/CreditLookup/Search*"],
+      "js": ["content-fleetone.js"],
+      "css": ["styles.css"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

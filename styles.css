@@ -1,0 +1,447 @@
+/* WFX Connect Extension Styles */
+
+#wfx-connect-widget,
+#wfx-connect-widget-sylectus,
+#wfx-fleetone-widget {
+  position: fixed !important;
+  bottom: 20px !important;
+  left: 20px !important;
+  width: 350px !important;
+  background: #ffffff !important;
+  border: 2px solid #007cba !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 10000 !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+  font-size: 14px !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+#wfx-connect-widget-sylectus {
+  border-color: #28a745 !important; /* Green color for Sylectus */
+}
+
+#wfx-connect-widget-sylectus .wfx-widget-header {
+  background: #28a745 !important; /* Green background for Sylectus */
+  color: white !important;
+  padding: 10px 15px !important;
+  border-radius: 6px 6px 0 0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-weight: bold !important;
+  cursor: move !important;
+}
+
+#wfx-fleetone-widget {
+  left: 380px !important; /* Position next to the DAT widget */
+}
+sion Styles */ #wfx-connect-widget,
+#wfx-fleetone-widget {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 350px;
+  background: #ffffff;
+  border: 2px solid #007cba;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+}
+
+#wfx-fleetone-widget {
+  left: 380px; /* Position next to the DAT widget */
+}
+
+.wfx-widget-header {
+  background: #007cba;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  cursor: move;
+}
+
+.wfx-toggle-btn {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#wfx-connect-widget-sylectus .wfx-toggle-btn {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.wfx-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.wfx-widget-content {
+  padding: 15px !important;
+  background: white !important;
+  display: block !important;
+}
+
+#wfx-connect-widget-sylectus .wfx-widget-content {
+  padding: 15px !important;
+  background: white !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.wfx-input-group {
+  margin-bottom: 15px !important;
+  display: block !important;
+}
+
+#wfx-connect-widget-sylectus .wfx-input-group {
+  margin-bottom: 15px !important;
+  display: block !important;
+}
+
+.wfx-input-group label {
+  display: block !important;
+  margin-bottom: 5px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+}
+
+#wfx-connect-widget-sylectus .wfx-input-group label {
+  display: block !important;
+  margin-bottom: 5px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+}
+
+.wfx-input-group input,
+.wfx-input-group select {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 2px solid #ddd !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  background: white !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 12px !important;
+  padding-right: 35px !important;
+  margin-top: 5px !important;
+  margin-bottom: 8px !important;
+}
+
+.wfx-input-group input {
+  background-image: none !important;
+  padding-right: 12px !important;
+}
+
+.wfx-input-group input:focus,
+.wfx-input-group select:focus {
+  outline: none;
+  border-color: #007cba;
+  box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.2);
+}
+
+.wfx-btn-primary {
+  width: 100% !important;
+  padding: 12px !important;
+  background: #007cba !important;
+  color: green !important;
+  border: 2px solid blue !important;
+  border-radius: 6px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  margin-top: 8px !important;
+  margin-bottom: 5px !important;
+  box-sizing: border-box !important;
+}
+
+.wfx-btn-primary:hover {
+  background: #005a8a !important;
+  border-color: darkblue !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.wfx-btn-primary:disabled {
+  background: #cccccc !important;
+  border-color: #cccccc !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  color: #666 !important;
+}
+
+.wfx-credit {
+  text-align: center;
+  font-size: 11px;
+  color: #666;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  font-style: italic;
+}
+
+.wfx-status {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.wfx-status.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.wfx-status.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.wfx-status.loading {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.wfx-results {
+  margin-top: 15px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.wfx-results-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin-top: 10px !important;
+  font-size: 12px !important;
+  background: white !important;
+  display: table !important;
+  table-layout: auto !important;
+}
+
+.wfx-results-table thead {
+  display: table-header-group !important;
+}
+
+.wfx-results-table tbody {
+  display: table-row-group !important;
+}
+
+.wfx-results-table tr {
+  display: table-row !important;
+}
+
+.wfx-results-table th,
+.wfx-results-table td {
+  border: 1px solid #ddd !important;
+  padding: 8px !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  display: table-cell !important;
+  white-space: nowrap !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.wfx-results-table th {
+  background-color: #f5f5f5 !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  color: #333 !important;
+}
+
+.wfx-results-table td[style*="background-color:#009933"] {
+  color: white !important;
+  font-weight: bold !important;
+  background-color: #009933 !important;
+}
+
+.wfx-record-details {
+  margin-top: 10px !important;
+  padding: 8px !important;
+  background: #f8f9fa !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  color: #6c757d !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.wfx-results-header {
+  font-weight: bold !important;
+  margin-bottom: 10px !important;
+  color: #333 !important;
+  border-bottom: 1px solid #eee !important;
+  padding-bottom: 5px !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.wfx-results-content {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.wfx-result-row {
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.wfx-result-row strong {
+  min-width: 120px;
+  color: #495057;
+}
+
+.wfx-csv-output {
+  background: #e9ecef;
+  padding: 10px;
+  border-radius: 4px;
+  border-left: 4px solid #007cba;
+}
+
+.wfx-csv-output code {
+  background: white;
+  padding: 5px;
+  border-radius: 3px;
+  display: block;
+  margin-top: 5px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.wfx-no-results {
+  text-align: center;
+  color: #6c757d;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #wfx-connect-widget,
+  #wfx-fleetone-widget {
+    width: 300px;
+    bottom: 10px;
+    left: 10px;
+  }
+
+  #wfx-fleetone-widget {
+    left: 320px;
+  }
+}
+
+/* Animation for smooth transitions */
+.wfx-widget-content {
+  transition: all 0.3s ease;
+}
+
+/* Ensure the widget doesn't interfere with page content */
+#wfx-connect-widget *,
+#wfx-fleetone-widget * {
+  box-sizing: border-box;
+}
+
+/* Override any potential conflicts with host page styles */
+#wfx-connect-widget,
+#wfx-connect-widget *,
+#wfx-connect-widget-sylectus,
+#wfx-connect-widget-sylectus *,
+#wfx-fleetone-widget,
+#wfx-fleetone-widget * {
+  all: unset;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* Specific overrides for DAT page */
+#wfx-connect-widget .wfx-btn-primary,
+#wfx-connect-widget-sylectus .wfx-btn-primary {
+  width: 100% !important;
+  padding: 12px !important;
+  background: #007cba !important;
+  color: green !important;
+  border: 2px solid blue !important;
+  border-radius: 6px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  margin-top: 8px !important;
+  margin-bottom: 5px !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  text-align: center !important;
+}
+
+#wfx-connect-widget .wfx-input-group select,
+#wfx-connect-widget-sylectus .wfx-input-group select {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 2px solid #007cba !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  background: white !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 12px !important;
+  padding-right: 35px !important;
+  margin-top: 5px !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+}
+
+#wfx-connect-widget {
+  position: fixed !important;
+  bottom: 20px !important;
+  left: 20px !important;
+  width: 350px !important;
+  background: #ffffff !important;
+  border: 2px solid #007cba !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 10000 !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+  font-size: 14px !important;
+}
