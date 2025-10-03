@@ -1,0 +1,42 @@
+# Project documentation (internal notes)
+PROJECT.md
+
+# Node modules (if you add any)
+node_modules/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Extension build files (if any)
+dist/
+build/
+
+# Temporary files
+.tmp/
+temp/
