@@ -295,13 +295,180 @@ class MCChecker {
     // This method can be called programmatically
     console.log(`[WFX] Checking MC ${mcNumber} with ${company}`);
 
-    // TODO: Implement actual FleetOne API call
-    // For now, return mock success
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ success: true, data: { mc: mcNumber, company } });
-      }, 1000);
-    });
+    try {
+      // Send message to background script to route to correct FleetOne tab
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          {
+            type: "CHECK_MC",
+            mc: mcNumber,
+            companyName: company === "yankee" ? "Yankee" : "NIS",
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+            } else {
+              resolve(response);
+            }
+          }
+        );
+      });
+
+      console.log(`[WFX] MC Checker background script response:`, response);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Show the detailed result in a popup similar to DAT/Sylectus
+      this.showDetailedResult(response, company);
+
+      return response;
+    } catch (error) {
+      console.error(`[WFX] MC Checker background script error:`, error);
+      throw error;
+    }
+  }
+
+  showDetailedResult(result, company) {
+    // Remove any existing result display
+    const existingResult = document.querySelector(".wfx-mc-detailed-result");
+    if (existingResult) {
+      existingResult.remove();
+    }
+
+    // Create detailed result display
+    const resultDiv = document.createElement("div");
+    resultDiv.className = "wfx-mc-detailed-result";
+    resultDiv.style.cssText = `
+      position: fixed;
+      top: 70px;
+      right: 10px;
+      width: 400px;
+      max-width: 90vw;
+      background: rgba(255, 255, 255, 0.98);
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 12px;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-family: Arial, sans-serif;
+    `;
+
+    if (result.error) {
+      resultDiv.innerHTML = `<span style="color: #ef4444; font-size: 11px;">❌ ${result.error}</span>`;
+    } else if (
+      result.data &&
+      result.data.rawData &&
+      result.data.rawData.table_data
+    ) {
+      // Parse and render the HTML table data (same as DAT/Sylectus)
+      let tableHtml = result.data.rawData.table_data;
+
+      // Remove any style tags that might interfere
+      tableHtml = tableHtml.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+      // Wrap the table rows in a proper table structure if needed
+      if (!tableHtml.includes("<table")) {
+        tableHtml = `<table style="width: 100%; border-collapse: collapse;">${tableHtml}</table>`;
+      }
+
+      resultDiv.innerHTML = `
+        <div style="font-size: 12px; color: #333;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong>FleetOne Results (MC Checker):</strong>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #dc2626; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">✕</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${tableHtml}
+          </div>
+        </div>
+      `;
+
+      // Add CSS for table styling
+      const tableStyle = `
+        .wfx-mc-detailed-result table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11px;
+          margin: 4px 0;
+        }
+        
+        .wfx-mc-detailed-result table td,
+        .wfx-mc-detailed-result table th {
+          padding: 4px 6px;
+          border: 1px solid #ddd;
+          text-align: left;
+          vertical-align: top;
+        }
+        
+        .wfx-mc-detailed-result table th {
+          background-color: #f5f5f5;
+          font-weight: bold;
+        }
+        
+        .wfx-mc-detailed-result table tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+      `;
+
+      // Inject table styles if not already present
+      if (!document.getElementById("wfx-mc-detailed-styles")) {
+        const style = document.createElement("style");
+        style.id = "wfx-mc-detailed-styles";
+        style.textContent = tableStyle;
+        document.head.appendChild(style);
+      }
+    } else if (result.rawData && result.rawData.table_data) {
+      // Fallback for direct rawData structure
+      let tableHtml = result.rawData.table_data;
+
+      // Remove any style tags that might interfere
+      tableHtml = tableHtml.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+      // Wrap the table rows in a proper table structure if needed
+      if (!tableHtml.includes("<table")) {
+        tableHtml = `<table style="width: 100%; border-collapse: collapse;">${tableHtml}</table>`;
+      }
+
+      resultDiv.innerHTML = `
+        <div style="font-size: 12px; color: #333;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong>FleetOne Results (MC Checker - fallback):</strong>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #dc2626; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">✕</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${tableHtml}
+          </div>
+        </div>
+      `;
+    } else if (
+      result.data &&
+      Array.isArray(result.data) &&
+      result.data.length > 0
+    ) {
+      // Fallback for old data structure
+      const record = result.data[0];
+      const companyName = record.debtorName || "Unknown";
+      const status = company === "yankee" ? "Y" : "N";
+      resultDiv.innerHTML = `
+        <div style="font-size: 11px; color: #10b981; margin-top: 2px;">
+          ✅ ${status}: ${companyName}
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = `<span style="color: #f59e0b; font-size: 11px;">⚠️ No records found</span>`;
+    }
+
+    // Add result to the page
+    document.body.appendChild(resultDiv);
+
+    // Auto-remove result after 10 seconds
+    setTimeout(() => {
+      if (resultDiv.parentNode) {
+        resultDiv.remove();
+      }
+    }, 10000);
   }
 
   remove() {
