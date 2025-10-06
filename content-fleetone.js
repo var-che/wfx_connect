@@ -4,6 +4,8 @@ console.log("WFX Connect: FleetOne content script loaded");
 class FleetOneIntegration {
   constructor() {
     console.log("WFX Connect: FleetOneIntegration constructor called");
+    this.autoRegisterInterval = null; // Store the interval ID
+    this.isAutoRegistering = false; // Track auto-registration status
     this.setupUI();
     this.setupMessageHandlers();
   }
@@ -28,6 +30,7 @@ class FleetOneIntegration {
           </select>
         </div>
         <button id="wfx-register-btn" class="wfx-btn-primary">Register Tab</button>
+        <button id="wfx-stop-auto-register" class="wfx-btn-secondary" style="display: none;">Stop Auto Register</button>
         <div id="wfx-fleetone-status" class="wfx-status"></div>
       </div>
     `;
@@ -45,6 +48,9 @@ class FleetOneIntegration {
       "#wfx-fleetone-widget .wfx-widget-content"
     );
     const registerBtn = document.getElementById("wfx-register-btn");
+    const stopAutoRegisterBtn = document.getElementById(
+      "wfx-stop-auto-register"
+    );
 
     // Toggle widget visibility
     toggleBtn.addEventListener("click", () => {
@@ -55,6 +61,11 @@ class FleetOneIntegration {
 
     // Register tab button
     registerBtn.addEventListener("click", () => this.registerTab());
+
+    // Stop auto register button
+    stopAutoRegisterBtn.addEventListener("click", () =>
+      this.stopAutoRegister()
+    );
   }
 
   setupMessageHandlers() {
@@ -83,11 +94,80 @@ class FleetOneIntegration {
       (response) => {
         if (response.success) {
           this.showFleetOneStatus(`Registered as ${company}`, "success");
+
+          // Start auto-registration if this is the first manual registration
+          if (!this.isAutoRegistering) {
+            this.startAutoRegister(company);
+          }
         } else {
           this.showFleetOneStatus("Registration failed", "error");
         }
       }
     );
+  }
+
+  startAutoRegister(company) {
+    console.log("WFX Connect: Starting auto-registration for", company);
+    this.isAutoRegistering = true;
+
+    // Show/hide buttons
+    const registerBtn = document.getElementById("wfx-register-btn");
+    const stopBtn = document.getElementById("wfx-stop-auto-register");
+    registerBtn.style.display = "none";
+    stopBtn.style.display = "inline-block";
+
+    // Start interval to auto-click register every 2 seconds
+    this.autoRegisterInterval = setInterval(() => {
+      console.log("WFX Connect: Auto-registering tab for", company);
+
+      chrome.runtime.sendMessage(
+        {
+          type: "REGISTER_FLEETONE",
+          companyName: company,
+        },
+        (response) => {
+          if (response.success) {
+            this.showFleetOneStatus(
+              `Auto-registered as ${company} (${new Date().toLocaleTimeString()})`,
+              "success"
+            );
+          } else {
+            console.log(
+              "WFX Connect: Auto-registration failed, stopping interval"
+            );
+            this.stopAutoRegister();
+            this.showFleetOneStatus(
+              "Auto-registration failed, stopped",
+              "error"
+            );
+          }
+        }
+      );
+    }, 2000);
+
+    this.showFleetOneStatus(
+      `Auto-registration started for ${company}`,
+      "success"
+    );
+  }
+
+  stopAutoRegister() {
+    console.log("WFX Connect: Stopping auto-registration");
+
+    if (this.autoRegisterInterval) {
+      clearInterval(this.autoRegisterInterval);
+      this.autoRegisterInterval = null;
+    }
+
+    this.isAutoRegistering = false;
+
+    // Show/hide buttons
+    const registerBtn = document.getElementById("wfx-register-btn");
+    const stopBtn = document.getElementById("wfx-stop-auto-register");
+    registerBtn.style.display = "inline-block";
+    stopBtn.style.display = "none";
+
+    this.showFleetOneStatus("Auto-registration stopped", "info");
   }
 
   async performMCSearch(mc, sendResponse) {
