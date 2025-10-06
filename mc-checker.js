@@ -98,7 +98,7 @@ class MCChecker {
       .wfx-mc-banner {
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         color: white;
-        padding: 12px 20px;
+        padding: 0px 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -131,6 +131,8 @@ class MCChecker {
         font-size: 14px;
         width: 120px;
         outline: none;
+        color: #000 !important;
+        background: white !important;
       }
       
       #wfx-company-select {
@@ -138,9 +140,15 @@ class MCChecker {
         border: none;
         border-radius: 6px;
         font-size: 14px;
-        background: white;
+        background: white !important;
+        color: #000 !important;
         outline: none;
         cursor: pointer;
+      }
+      
+      #wfx-company-select option {
+        color: #000 !important;
+        background: white !important;
       }
       
       .wfx-submit-btn {
