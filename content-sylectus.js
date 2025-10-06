@@ -1,220 +1,455 @@
-// Content script for Sylectus integration
-class SylectusIntegration {
+// Content script for Sylectus integration - Using FleetOne tab communication
+class SylectusSimple {
   constructor() {
-    console.log("WFX Connect: SylectusIntegration constructor called");
-    this.setupUI();
-    this.setupMessageHandlers();
+    this.isInIframe = window !== window.top;
+    this.injectedCSS = false;
+    this.mcChecker = null;
+    this.init();
   }
 
-  setupUI() {
-    console.log("WFX Connect: Setting up Sylectus UI");
-    // Create the floating widget container
-    const widget = document.createElement("div");
-    widget.id = "wfx-connect-widget-sylectus";
-    widget.innerHTML = `
-      <div class="wfx-widget-header">
-        <span>WFX Connect - Sylectus</span>
-        <button class="wfx-toggle-btn" title="Toggle widget">−</button>
-      </div>
-      <div class="wfx-widget-content">
-        <div class="wfx-input-group">
-          <label for="wfx-mc-input-sylectus">MC Number:</label>
-          <input type="text" id="wfx-mc-input-sylectus" placeholder="Enter MC number" />
-        </div>
-        <div class="wfx-input-group">
-          <label for="wfx-company-select-sylectus">Company:</label>
-          <select id="wfx-company-select-sylectus">
-            <option value="">Select Company</option>
-            <option value="Yankee">Yankee</option>
-            <option value="NIS">NIS</option>
-          </select>
-        </div>
-        <button id="wfx-check-btn-sylectus" class="wfx-btn-primary">Check MC</button>
-        <div id="wfx-status-sylectus" class="wfx-status"></div>
-        <div id="wfx-results-sylectus" class="wfx-results"></div>
-        <div class="wfx-credit">Made from ❤️ from Donja Vrezina</div>
-      </div>
+  init() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        this.setup();
+      });
+    } else {
+      this.setup();
+    }
+  }
+
+  setup() {
+    console.log(`[WFX] Sylectus setup - isInIframe: ${this.isInIframe}`);
+
+    if (this.isInIframe) {
+      // In iframe: Add hover detection for load TD elements
+      console.log("[WFX] Setting up iframe hover detection");
+      this.injectCSS();
+      this.setupTargetedHover();
+    } else {
+      // Main page: Initialize shared MC checker component
+      console.log("[WFX] Setting up main page MC checker");
+      if (window.MCChecker) {
+        this.mcChecker = new window.MCChecker("Sylectus");
+        this.mcChecker.init();
+      }
+    }
+  }
+
+  injectCSS() {
+    if (this.injectedCSS) return;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .wfx-hover-buttons {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        display: none;
+        gap: 4px;
+        z-index: 1000;
+      }
+      
+      .wfx-hover-buttons.show {
+        display: flex;
+      }
+      
+      .wfx-hover-button {
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        min-width: 24px;
+        text-align: center;
+      }
+      
+      .wfx-hover-button.y-button {
+        background: #16a34a;
+        color: white;
+      }
+      
+      .wfx-hover-button.y-button:hover {
+        background: #15803d;
+      }
+      
+      .wfx-hover-button.n-button {
+        background: #dc2626;
+        color: white;
+      }
+      
+      .wfx-hover-button.n-button:hover {
+        background: #b91c1c;
+      }
+      
+      .wfx-hover-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      
+      .wfx-mc-result {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 400px;
+        max-width: 90vw;
+        background: rgba(255, 255, 255, 0.98);
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px 12px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+      
+      .wfx-mc-result table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+        margin: 4px 0;
+      }
+      
+      .wfx-mc-result table td,
+      .wfx-mc-result table th {
+        padding: 4px 6px;
+        border: 1px solid #ddd;
+        text-align: left;
+        vertical-align: top;
+      }
+      
+      .wfx-mc-result table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+      }
+      
+      .wfx-mc-result table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
     `;
 
-    document.body.appendChild(widget);
-    console.log("WFX Connect: Sylectus widget added to DOM");
-    this.setupEventHandlers();
+    document.head.appendChild(style);
+    this.injectedCSS = true;
   }
 
-  setupEventHandlers() {
-    const toggleBtn = document.querySelector(
-      "#wfx-connect-widget-sylectus .wfx-toggle-btn"
-    );
-    const content = document.querySelector(
-      "#wfx-connect-widget-sylectus .wfx-widget-content"
-    );
-    const checkBtn = document.getElementById("wfx-check-btn-sylectus");
-    const mcInput = document.getElementById("wfx-mc-input-sylectus");
+  setupTargetedHover() {
+    // Only proceed if we're in iframe
+    if (!this.isInIframe) return;
 
-    // Toggle widget visibility
-    toggleBtn.addEventListener("click", () => {
-      const isVisible = content.style.display !== "none";
-      content.style.display = isVisible ? "none" : "block";
-      toggleBtn.textContent = isVisible ? "+" : "−";
-    });
+    // Add hover listeners to existing px9 TD elements
+    this.addHoverListeners();
 
-    // Check MC button
-    checkBtn.addEventListener("click", () => this.performMCCheck());
-
-    // Enter key on MC input
-    mcInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        this.performMCCheck();
-      }
-    });
-  }
-
-  setupMessageHandlers() {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "MC_CHECK_RESULT") {
-        this.displayResults(message.data);
-        sendResponse({ received: true });
-      }
-    });
-  }
-
-  async performMCCheck() {
-    const mcInput = document.getElementById("wfx-mc-input-sylectus");
-    const companySelect = document.getElementById(
-      "wfx-company-select-sylectus"
-    );
-    const statusDiv = document.getElementById("wfx-status-sylectus");
-    const resultsDiv = document.getElementById("wfx-results-sylectus");
-
-    const mc = mcInput.value.trim();
-    const company = companySelect.value;
-
-    // Clear previous results
-    resultsDiv.innerHTML = "";
-
-    // Validation
-    if (!mc) {
-      this.showStatus("Please enter an MC number", "error");
-      return;
-    }
-
-    if (!company) {
-      this.showStatus("Please select a company", "error");
-      return;
-    }
-
-    // Show loading state
-    this.showStatus("Checking MC...", "loading");
-    document.getElementById("wfx-check-btn-sylectus").disabled = true;
-
-    try {
-      console.log("WFX Connect: Sylectus sending MC check request", {
-        mc,
-        company,
+    // Watch for new TD elements being added
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.tagName === "TD" && node.className === "px9") {
+                this.addHoverToElement(node);
+              } else if (node.querySelectorAll) {
+                const tds = node.querySelectorAll("td.px9");
+                tds.forEach((td) => this.addHoverToElement(td));
+              }
+            }
+          });
+        }
       });
+    });
 
-      // Send message to background script
-      const response = await new Promise((resolve) => {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  addHoverListeners() {
+    const targetTds = document.querySelectorAll("td.px9");
+
+    targetTds.forEach((td, index) => {
+      this.addHoverToElement(td, index);
+    });
+  }
+
+  addHoverToElement(td, index = "new") {
+    // Skip if already has hover listener
+    if (td.dataset.wfxHover) return;
+
+    // Mark as processed
+    td.dataset.wfxHover = "true";
+
+    // Ensure the TD has relative positioning for absolute button positioning
+    if (getComputedStyle(td).position === "static") {
+      td.style.position = "relative";
+    }
+
+    td.addEventListener("mouseenter", (e) => {
+      const innerHTML = td.innerHTML;
+
+      // Check if innerHTML matches our patterns:
+      // Pattern 1: starts with <br> and has digits after <br>
+      // Pattern 2: starts with digits and has <br> somewhere
+      const startsWithBr = innerHTML.startsWith("<br>") && /\d/.test(innerHTML);
+      const startsWithDigitsAndHasBr =
+        /^\d/.test(innerHTML) && innerHTML.includes("<br>");
+
+      if (startsWithBr || startsWithDigitsAndHasBr) {
+        const text = td.textContent?.trim() || "";
+        console.log(`[WFX] TARGETED HOVER - px9 TD with load pattern:`, {
+          text: text,
+          innerHTML: innerHTML,
+        });
+
+        // Show buttons
+        this.showButtons(td);
+      }
+    });
+
+    td.addEventListener("mouseleave", (e) => {
+      // Hide buttons
+      this.hideButtons(td);
+    });
+  }
+
+  showButtons(td) {
+    // Remove any existing buttons first
+    this.hideButtons(td);
+
+    // Create button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "wfx-hover-buttons show";
+
+    // Create Y button
+    const yButton = document.createElement("button");
+    yButton.className = "wfx-hover-button y-button";
+    yButton.textContent = "Y";
+    yButton.title = "Check MC as Yankee";
+    yButton.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const mcNumber = this.extractMCNumber(td);
+      if (mcNumber) {
+        console.log("[WFX] Y button clicked - MC Number:", mcNumber);
+        // Show loading state
+        yButton.textContent = "...";
+        yButton.disabled = true;
+
+        try {
+          const result = await this.performFleetOneSearch(mcNumber, "Yankee");
+          this.showResultInline(td, result, "yankee");
+        } catch (error) {
+          console.error("[WFX] Error checking MC:", error);
+          this.showResultInline(td, { error: "Check failed" }, "yankee");
+        } finally {
+          yButton.textContent = "Y";
+          yButton.disabled = false;
+        }
+      }
+    };
+
+    // Create N button
+    const nButton = document.createElement("button");
+    nButton.className = "wfx-hover-button n-button";
+    nButton.textContent = "N";
+    nButton.title = "Check MC as NIS";
+    nButton.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const mcNumber = this.extractMCNumber(td);
+      if (mcNumber) {
+        console.log("[WFX] N button clicked - MC Number:", mcNumber);
+        // Show loading state
+        nButton.textContent = "...";
+        nButton.disabled = true;
+
+        try {
+          const result = await this.performFleetOneSearch(mcNumber, "NIS");
+          this.showResultInline(td, result, "nis");
+        } catch (error) {
+          console.error("[WFX] Error checking MC:", error);
+          this.showResultInline(td, { error: "Check failed" }, "nis");
+        } finally {
+          nButton.textContent = "N";
+          nButton.disabled = false;
+        }
+      }
+    };
+
+    buttonContainer.appendChild(yButton);
+    buttonContainer.appendChild(nButton);
+    td.appendChild(buttonContainer);
+  }
+
+  hideButtons(td) {
+    const existingButtons = td.querySelector(".wfx-hover-buttons");
+    if (existingButtons) {
+      existingButtons.remove();
+    }
+  }
+
+  extractMCNumber(td) {
+    const innerHTML = td.innerHTML;
+    const textContent = td.textContent?.trim() || "";
+
+    // Method 1: Extract numbers after the last <br> tag in innerHTML
+    const lastBrIndex = innerHTML.lastIndexOf("<br>");
+    if (lastBrIndex !== -1) {
+      const afterLastBr = innerHTML.substring(lastBrIndex + 4); // +4 for '<br>'
+      const numbersAfterBr = afterLastBr.match(/\d+/);
+      if (numbersAfterBr) {
+        return numbersAfterBr[0];
+      }
+    }
+
+    // Method 2: Extract the last sequence of digits from text content
+    const allNumbers = textContent.match(/\d+/g);
+    if (allNumbers && allNumbers.length > 0) {
+      return allNumbers[allNumbers.length - 1]; // Return the last number found
+    }
+
+    // Method 3: Try to find MC number at the end of text
+    const endNumbers = textContent.match(/\d+$/);
+    if (endNumbers) {
+      return endNumbers[0];
+    }
+
+    return null;
+  }
+
+  async performFleetOneSearch(mc, companyName) {
+    try {
+      console.log(
+        `[WFX] Sending MC check to background script: MC ${mc} for ${companyName}`
+      );
+
+      // Send message to background script to route to correct FleetOne tab
+      const response = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
           {
             type: "CHECK_MC",
             mc: mc,
-            companyName: company,
+            companyName: companyName,
           },
-          resolve
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+            } else {
+              resolve(response);
+            }
+          }
         );
       });
 
-      console.log("WFX Connect: Sylectus received response", response);
+      console.log(`[WFX] Background script response:`, response);
 
       if (response.error) {
-        this.showStatus(response.error, "error");
-      } else {
-        this.displayResults(response.data);
-        this.showStatus("MC check completed", "success");
+        throw new Error(response.error);
       }
+
+      return response;
     } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "error");
-    } finally {
-      document.getElementById("wfx-check-btn-sylectus").disabled = false;
+      console.error(`[WFX] Background script error:`, error);
+      throw error;
     }
   }
 
-  showStatus(message, type) {
-    const statusDiv = document.getElementById("wfx-status-sylectus");
-    statusDiv.textContent = message;
-    statusDiv.className = `wfx-status ${type}`;
-  }
-
-  displayResults(data) {
-    console.log("WFX Connect: Sylectus displaying results:", data);
-    const resultsDiv = document.getElementById("wfx-results-sylectus");
-
-    if (!data || !data.rawData) {
-      resultsDiv.innerHTML =
-        '<div class="wfx-no-results">No results found</div>';
-      return;
+  showResultInline(td, result, company) {
+    // Remove any existing result display
+    const existingResult = td.querySelector(".wfx-mc-result");
+    if (existingResult) {
+      existingResult.remove();
     }
 
-    const { rawData } = data;
-    console.log("WFX Connect: Raw data to display:", rawData);
+    // Create result display
+    const resultDiv = document.createElement("div");
+    resultDiv.className = "wfx-mc-result";
 
-    // Check if we have table_data
-    if (!rawData.table_data) {
-      resultsDiv.innerHTML =
-        '<div class="wfx-no-results">No table data found</div>';
-      return;
+    if (result.error) {
+      resultDiv.innerHTML = `<span style="color: #ef4444; font-size: 11px;">❌ ${result.error}</span>`;
+    } else if (
+      result.data &&
+      result.data.rawData &&
+      result.data.rawData.table_data
+    ) {
+      // Parse and render the HTML table data
+      let tableHtml = result.data.rawData.table_data;
+
+      // Remove any style tags that might interfere
+      tableHtml = tableHtml.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+      // Wrap the table rows in a proper table structure if needed
+      if (!tableHtml.includes("<table")) {
+        tableHtml = `<table style="width: 100%; border-collapse: collapse;">${tableHtml}</table>`;
+      }
+
+      resultDiv.innerHTML = `
+        <div style="font-size: 12px; color: #333;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong>FleetOne Results:</strong>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #dc2626; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">✕</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${tableHtml}
+          </div>
+        </div>
+      `;
+    } else if (result.rawData && result.rawData.table_data) {
+      // Fallback for direct rawData structure
+      let tableHtml = result.rawData.table_data;
+
+      // Remove any style tags that might interfere
+      tableHtml = tableHtml.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+      // Wrap the table rows in a proper table structure if needed
+      if (!tableHtml.includes("<table")) {
+        tableHtml = `<table style="width: 100%; border-collapse: collapse;">${tableHtml}</table>`;
+      }
+
+      resultDiv.innerHTML = `
+        <div style="font-size: 12px; color: #333;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong>FleetOne Results (fallback):</strong>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #dc2626; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">✕</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${tableHtml}
+          </div>
+        </div>
+      `;
+    } else if (
+      result.data &&
+      Array.isArray(result.data) &&
+      result.data.length > 0
+    ) {
+      // Fallback for old data structure
+      const record = result.data[0];
+      const companyName = record.debtorName || "Unknown";
+      const status = company === "yankee" ? "Y" : "N";
+      resultDiv.innerHTML = `
+        <div style="font-size: 11px; color: #10b981; margin-top: 2px;">
+          ✅ ${status}: ${companyName}
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = `<span style="color: #f59e0b; font-size: 11px;">⚠️ No records found</span>`;
     }
 
-    // Remove the <style> tag from table_data as it should not be displayed
-    const cleanTableData = rawData.table_data.replace(
-      /<style[\s\S]*?<\/style>/gi,
-      ""
-    );
+    // Add result to the top-right of the page instead of the TD
+    document.body.appendChild(resultDiv);
 
-    resultsDiv.innerHTML = `
-      <div class="wfx-results-header">FleetOne Results:</div>
-      <div class="wfx-results-content">
-        <table class="wfx-results-table">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Name</th>
-              <th>Address</th>
-              <th>Key</th>
-              <th>MC #</th>
-              <th>DOT #</th>
-              <th>Days to Pay All<br># of Pmts All</th>
-              <th>Days to Pay 90<br># of Pmts 90</th>
-              <th>Days to Pay 60<br># of Pmts 60</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${cleanTableData}
-          </tbody>
-        </table>
-      </div>
-      <div class="wfx-record-details">
-        ${rawData.table_records_details || ""}
-      </div>
-    `;
+    // Auto-remove result after 10 seconds (longer since it's more prominent)
+    setTimeout(() => {
+      if (resultDiv.parentNode) {
+        resultDiv.remove();
+      }
+    }, 10000);
   }
 }
 
-// Initialize when DOM is ready
-console.log("WFX Connect: Sylectus content script loaded");
-console.log("WFX Connect: Current URL:", window.location.href);
-console.log("WFX Connect: DOM state:", document.readyState);
-
+// Initialize
 if (document.readyState === "loading") {
-  console.log("WFX Connect: DOM still loading, adding event listener");
   document.addEventListener("DOMContentLoaded", () => {
-    console.log("WFX Connect: DOM loaded, initializing Sylectus integration");
-    new SylectusIntegration();
+    new SylectusSimple();
   });
 } else {
-  console.log(
-    "WFX Connect: DOM already ready, initializing Sylectus integration immediately"
-  );
-  new SylectusIntegration();
+  new SylectusSimple();
 }

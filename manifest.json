@@ -20,18 +20,22 @@
   "content_scripts": [
     {
       "matches": ["https://one.dat.com/*"],
-      "js": ["content-dat.js"],
-      "css": ["styles.css"]
+      "js": ["mc-checker.js", "content-dat.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
     },
     {
-      "matches": ["https://www12.sylectus.com/Main.aspx*"],
-      "js": ["content-sylectus.js"],
-      "css": ["styles.css"]
+      "matches": ["https://*.sylectus.com/**"],
+      "js": ["mc-checker.js", "content-sylectus.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end",
+      "all_frames": true
     },
     {
-      "matches": ["https://apps.fleetone.com/FleetDocs/CreditLookup/Search*"],
+      "matches": ["https://apps.fleetone.com/*"],
       "js": ["content-fleetone.js"],
-      "css": ["styles.css"]
+      "css": ["styles.css"],
+      "run_at": "document_end"
     }
   ],
 
